@@ -1,6 +1,7 @@
 import pandas as pd
 import pickle
 import json
+import re
 from datetime import datetime
 
 from Document import Document, RedditDocument, ArxivDocument
@@ -157,3 +158,62 @@ class Corpus:
 
     def __repr__(self):
         return f"<Corpus '{self.nom}', {self.ndoc} document(s), {self.naut} auteur(s)>"
+    
+
+    #La fonction de recherhe qui va retourner les passages de document contenant le mot clé
+    def search(keyword):
+        results = []
+        for doc_id, doc in self.id2doc.items():
+            if keyword.lower() in doc.texte.lower() or keyword.lower() in doc.titre.lower():
+                results.append((doc_id, doc))
+        return results
+            
+
+#fonction de concordance en utilisant re et panda et avoir dans un tableau :contexte gauche, motivf trouvé, contexte droit
+    def concorde (self, keyword, taille =30): 
+        concordance_list = []
+        pattern = re.compile(r'.{0,' + str(taille) + r'}\b' + re.escape(keyword) + r'\b.{0,' + str(taille) + r'}', re.IGNORECASE)
+
+        for doc_id, doc in self.id2doc.items():
+            matches = pattern.findall(doc.texte)
+            for match in matches:
+                concordance_list.append({
+                    'doc_id': doc_id,
+                    'concordance': match.strip()
+                })
+
+        return pd.DataFrame(concordance_list)
+
+#PARTIE 2: Statistiques 
+
+#Fonction nettoyer_text qui prend une chaine de caractères en entrée et lui applique une chaine de traitement, mise en minuscule, paaasges à la ligne
+
+    def nettoyer_text (self, text):
+        text = text.lower()
+        text = re.sub(r'\n', ' ', text)
+        text = re.sub(r'[^\w\s]', '', text)
+        text = re.sub(r'\s+', ' ', text).strip()
+        return text
+    
+#Le nombre de mots différents dans le corpus
+
+    def nombre_mots_differents (self):
+        mots_uniques = set()
+        for doc_id, doc in self.id2doc.items():
+            mots = re.findall(r'\b\w+\b', doc.texte.lower())
+            mots_uniques.update(mots)
+        return len(mots_uniques)
+    
+    #Afficher les n mots les plus fréquents 
+    def mots_plus_frequents (self, n=10):
+        from collections import Counter
+        compteur_mots = Counter()
+        for doc_id, doc in self.id2doc.items():
+            mots = re.findall(r'\b\w+\b', doc.texte.lower())
+            compteur_mots.update(mots)
+        return compteur_mots.most_common(n)
+
+
+
+
+
