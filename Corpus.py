@@ -289,6 +289,16 @@ class Corpus:
         print(df_freq.head(n).to_string(index=False))
         
         return df_freq
+    
+#Dictionnaire vocab contenant le text de mes documents (retirer les doublons et trier par ordre alphabétique)
+    def vocab(self):
+        vocab = set()
+        for doc_id, doc in self.id2doc.items():
+            texte_net = self.nettoyer_text(doc.texte)
+            mots = re.findall(r'\b\w+\b', texte_net)
+            vocab.update(mots)
+        return sorted(vocab)
+    
 
 
 
