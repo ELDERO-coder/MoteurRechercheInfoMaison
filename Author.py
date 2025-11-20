@@ -5,21 +5,19 @@ class Author:
         self.ndoc = 0
         self.productions = {}
 
-    def add_production(self, document):
-        self.productions.append(document)
-        self.ndoc += 1
-
     def __str__(self):
         return f"Author(name={self.name})"
     
     def __repr__(self):
         return f"Author(name={self.name}, ndoc={self.ndoc}, productions={self.productions})"
+    
     def afficher_infos(self):
+        """Affiche les informations de l'auteur"""
         print(f"Nom de l'auteur: {self.name}")
         print(f"Nombre de documents: {self.ndoc}")
         print("Productions:")
-        for doc in self.productions:
-            print(f" - {doc}")
+        for doc_id, doc in self.productions.items():
+            print(f"  [{doc_id}] {doc.titre}")
 
     def add (self, doc_id, document):
         self.productions[doc_id] = document

@@ -7,6 +7,7 @@ class Document:
         self.date = self.convertir_date(date_str)
         self.url = url
         self.texte = texte
+        self.type = "Document"  # Type par défaut pour les documents génériques
 
     def convertir_date(self, date_str):
         """Convertit YYYY-MM-DD -> datetime, sinon utilise date actuelle."""
@@ -24,6 +25,10 @@ class Document:
         print("URL :", self.url)
         print("Texte :", self.texte)
 
+    def getType(self):
+        """Retourne le type du document"""
+        return self.type
+
     def __str__(self):
         """Version digeste lors d'un print()"""
         return f"Document : {self.titre}"
@@ -36,6 +41,10 @@ class RedditDocument(Document):
         self.nb_commentaires = nb_commentaires
 
         self.type = "Reddit"
+
+    def getType(self):
+        """Retourne le type du document"""
+        return self.type
 
     def getNbCommentaires(self):
         return self.nb_commentaires
@@ -56,6 +65,10 @@ class ArxivDocument(Document):
         self.coauthors = coauthors  # liste de noms des auteur
 
         self.type = "Arxiv"
+
+    def getType(self):
+        """Retourne le type du document"""
+        return self.type
 
     def getCoauthors(self):
         return self.coauthors

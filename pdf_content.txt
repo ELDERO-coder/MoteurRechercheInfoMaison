@@ -1,0 +1,203 @@
+Programmation de sp´ ecialit´ e (python)
+TD 3 : acquisition de donn´ ees
+Julien Velcin
+2025-2026∗
+L’objectif principal de cette suite de travaux dirig´ es est de mettre au point un moteur de recherche
+d’information maison. Il ne s’agit donc pas d’utiliser l’une des (nombreuses) librairies existantes mais
+d’impl´ ementer sapropre solution. C’est ainsi l’occasion de mettre en œuvre les connaissances acquises
+dans le cours tout en acqu´ erant une meilleure compr´ ehension des techniques souvent cach´ ees derri` ere
+les librairies “prˆ etes ` a l’emploi” (par ex. scikit-learn ou nltk). Il vous est doncinterditde recourir ` a
+ces derni` eres.
+Partie 1 : chargement des donn´ ees
+Cette premi` ere partie consiste ` a extraire des documents ` a partir d’une source externe. Ces documents
+s’organisent en une collection qu’on appelle uncorpus. On consid` ere plusieurs sources d’information que
+l’on aimerait croiser sur un sujet de votre choix que nous appelleronsth´ ematique. Cette th´ ematique
+devra pouvoir ˆ etre simplement identifi´ ee par un ou des mots cl´ es, par exemple : “Coronavirus”,
+“football”, “climate” (nous travaillerons en anglais).
+Nous allons d’abord simplement r´ ecup´ erer le contenu textuel. Commencez par cr´ eer une listedocs.
+Chaque entr´ ee de la liste sera un document (donc un texte pour le moment). Les documents viendront
+dedeuxsources : Reddit et Arxiv. Vous r´ ecup´ ererez les documents li´ es ` a votre th´ ematique au moyen
+de mots-cl´ es, comme indiqu´ e ci-dessous.
+1.1Reddit: ` a l’aide de la librairiepraw, interrogez l’API comme expliqu´ e dans le site web suivant.
+Quels sont les champs disponibles ? Quel est le champ contenant le contenu textuel ? Alimentez la
+listedocsavec ce texte uniquement. Vous pouvez d´ ej` a vous d´ ebarrasser des sauts de ligne (\n) en les
+rempla¸ cant par des espaces.
+1.2Arxiv: ` a l’aide de la librairieurllib, interrogez l’API d’Arxiv en vous aidant de l’aide en ligne.
+Parser les r´ esultat grˆ ace ` a la librairexmltodict. Quels sont les champs disponibles ? Quel est le
+champ contenant le contenu textuel ? Alimentez la listedocs.
+Partie 2 : sauvegarde des donn´ ees
+L’objectif est de ne pas avoir ` a interroger les APIs ` a chaque fois qu’on ex´ ecute notre programme. Pour
+cela :
+∗ ´Edit´ e par Tetiana Yemelianenko
+1
+2.1Cr´ eez un tableau de typeDataFramede la librairiepandas. Instanciez ce tableau avec les textes
+qui ont ´ et´ e r´ ecup´ er´ es depuis les APIs. Vous utiliserez trois colonnes : une premi` ere colonne contenant
+l’identifiant unique du texte (par ex. un simple entier naturel), une deuxi` eme colonne contenant le
+texte et une troisi` eme colonne contenant son origine (reddit ou arxiv).
+2.2Sauvegardez ce tableau sur le disque dans un fichier de type.csvavec la tabulation\tcomme
+s´ eparateur.
+2.3Ajoutez le code permettant de charger directement ce tableau en m´ emoire, sans avoir ` a passer
+par l’interrogation des APIs.
+Partie 3 : premi` eres manipulation des donn´ ees
+Nous allons manipuler simplement notre corpus.
+3.1Affichez la taille de votre corpus, c` ad le nombre de documents.
+3.2Pour chaque document, affichez le nombre de mots et de phrases. Pour cela, vous utiliserez la
+fonctionspliten consid´ erant que les mots sont s´ epar´ es par des espaces et les phrases par des points.
+Il s’agit bien sˆ ur d’une simplification, des techniques plus avanc´ ees ont ´ et´ e d´ evelopp´ ees en TAL.
+3.3Supprimez de votre corpus les documents trop petits, ici qui contiennent moins de 20 caract` eres.
+3.4Cr´ eez une unique chaˆ ıne de caract` ere contenant tous les documents grˆ ace ` a la fonctionjoin.
+Cette chaˆ ıne de caract` ere vous sera utile dans la suite des TDs.
+2
+Programmation de sp´ ecialit´ e (python)
+TD 4 : premi` ere structuration du code
+Julien Velcin
+2025-2026∗
+L’objectif de ce TD est de commencer ` a structurer le code ` a l’aide de classes et de modules.
+Partie 1 : premi` ere classe : le Document
+Le contenu textuel n’est pas la seule ressource importante du corpus que vous avez constitu´ e. Les
+documents sont souvent associ´ es ` a de nombreuses m´ eta-donn´ ees comme le nom de l’auteur, l’ann´ ee de
+publication, des tags, etc. Pour les g´ erer, nous allons utiliser le paradigme objet.
+1.1Dans un fichier (module) ` a part, intitul´ eDocument.py, cr´ eez une classeDocumentcontenant les
+attributs suivants :
+•titre: le titre du document
+•auteur: le nom de l’auteur
+•date: la date de publication
+•url: l’url source
+•texte: le contenu textuel du document
+1.2Cr´ eez une premi` ere m´ ethode, qui va afficher toutes les informations d’une instance. Impl´ ementez
+ensuite la m´ ethode__str__(self)qui affichera une version “digeste” de l’instance (par exemple son
+titre seulement). Cette m´ ethode sera appel´ ee quand vous ex´ ecuterez la fonctionprint(doc), o` udoc
+est une instance de document.
+1.3Modifiez le code du TD pr´ ec´ edent afin de pouvoir instancier des objetsDocument. Attention, il
+faut bien penser ` aimporterle module dans le fichier principal. Pour la date de publication, vous
+pouvez la consid´ erer comme une chaˆ ıne de caract` erestrmais le mieux serait de la traiter ` a l’aide de
+la librairiedatetime.
+Il faut cr´ eer une collection qui doit contenir toutes les instances que vous aurez cr´ e´ ees, quelle que
+soit leur origine. Pour cela, ` a la place de la liste, vous utiliserez undictionnairequi vaindexerles
+documents, c’est-` a-dire les associer ` a un identifiant unique (leurclef) que vous g´ en´ erez au fur et ` a
+mesure. Vous appellerez ce dictionnaire d’indicesid2docdont les cl´ es sont les identifiants et les valeurs
+les objets qui repr´ esentent les documents.
+∗ ´Edit´ e par Tetiana Yemelianenko
+1
+Partie 2 : Prise en compte des auteurs
+Les auteurs aussi sont associ´ es ` a des m´ eta-donn´ ees int´ eressantes. Vous allez impl´ ementer une classe
+pour g´ erer ces informations.
+2.1Cr´ eez une classeAuthorcontenant les attributs suivants:
+•name: son nom
+•ndoc: nombre de documents publi´ es
+•production: un dictionnaire des documents ´ ecrits par l’auteur
+Mettez cette nouvelle classe dans un fichier (module) ` a part, intitul´ eAuthor.py.
+2.2Cr´ eez une premi` ere m´ ethodeaddpropre ` a la classeAuthor, qui va permettre d’alimenter l’attribut
+production. Cet attribut permet de compiler l’ensemble des documents r´ edig´ es par un auteur.
+Impl´ ementez ensuite les m´ ethodes__str__(self)
+2.3Dans le fichier principal, cr´ eez un dictionnaireid2autcontenant les auteurs avec comme clef leur
+nom que l’on consid` erera unique. Pour l’alimenter, vous devrez ajouter une instance d’auteur ` a chaque
+fois que vous observerez un nouvel auteur au moment d’alimenter le dictionnaireid2doc. Vous devrez
+v´ erifier si l’auteur est connu, c’est-` a-dire si son nom ne fait pas d´ ej` a partie des clefs du dictionnaire.
+2.4Ajoutez le code n´ ecessaire pour pouvoir demander quelques statistiques concernant un auteur
+entr´ e par l’utilisateur : nombre de documents produits et taille moyenne des documents.
+Partie 3 : Cr´ eation du corpus
+Il s’agit ` a pr´ esent de structurer le code du fichier principal ` a l’int´ erieur d’une classe d´ edi´ ee ` a la gestion
+d’un corpus. Cela peut permettre de g´ ererplusieurscorpus ou un corpus qui ´ evolue dans le temps.
+3.1Cr´ eez une classeCorpus, qui sera impl´ ement´ ee dans son propre fichierCorpus.py, ` a partir des
+m´ ethode d’ajout des questions pr´ ec´ edentes et contenant les attributs suivants :
+•nom: le nom du corpus
+•authors: le dictionnaire des auteurs
+•id2doc: le dictionnaire des documents
+•ndoc: comptage des documents
+•naut: comptage des auteurs
+3.2Impl´ ementez les m´ ethodes permettant d’afficher les ´ el´ ement du corpus tri´ es selon la date et le titre.
+Les m´ ethodes prennent en param` etre le nombre de documents que vous voulez afficher. Impl´ ementez
+la m´ ethode__repr__(self), qui permet un affichage plus digeste.
+3.3Cr´ eez enfin des m´ ethodessaveetloadqui permettent d’enregistrer et charger le corpus sur le
+disque dur. Pour cela, enrichissez le code que vous avez r´ ealis´ e dans le TD pr´ ec´ edent afin de passer
+par une tableDataFrame.
+Il est bien sˆ ur possible d’utiliser d’autres formats, comme par exemplepickleoujson. N’h´ esitez
+pas ` a les tester (optionnel).
+2
+3.4Essayez de sauvegarder et charger vos donn´ ees pour vous assurer que toute la chaˆ ıne de traitement
+est op´ erationnelle.
+3
+Programmation de sp´ ecialit´ e (python)
+TD 5 : h´ eritage et premi` ere interface
+Julien Velcin
+2025-2026∗
+Les deux types de documents que vous avez int´ egr´ es ` a votre corpus (postde Reddit et articles
+d’Arxiv) poss` edent de nombreux points communs : un titre, un auteur, une date, etc. Ils poss` edent
+´ egalement un certain nombre de diff´ erences. Par exemple, les articles Reddit d´ eclenchent des commen-
+taires et l’API permet de r´ ecup´ erer (entre autres) de r´ ecup´ erer leur nombre. Les articles Arxiv sont
+le plus souvent ´ ecrits parplusieurs auteurset il est possible d’en r´ ecup´ erer la liste. Dans cette partie,
+on vous demande de mettre en place un m´ ecanisme d’h´ eritage en impl´ ementant les deux classes filles
+RedditDocumentetArxivDocument. On vous conseille d’impl´ ementer ces deux nouvelles classes dans
+le fichierDocument.py, ` a la suite de la classe m` ere.
+Partie 1 : classe RedditDocument
+1.1Cr´ eez une premi` ere classe filleRedditDocumentqui h´ erite deDocument. Cette classe doit int´ egrer
+au moins une nouvelle variable typique aux documents Reddit et qu’on ne retrouve pas dans les autres
+sources que vous manipulez. Il s’agit par exemple du nombre de commentaires post´ es par les internautes
+en r´ eaction au message. Il faudra notamment impl´ ementer :
+•un constructeur, en pensant ` a appeler le constructeur de la classe m` ere (en utilisant si possible
+le mot-clefsuper()),
+•des accesseurs/mutateurs pour les champs sp´ ecifiques ` a la classe,
+•une m´ ethode sp´ ecifique pour s’occuper de l’affichage de l’objet, via la m´ ethode__str__.
+Partie 2 : classe ArxivDocument
+2.1De la mˆ eme mani` ere, cr´ eez une seconde classe filleArxivDocumentqui int` egre la gestion des
+co-auteurs des articles comme ´ el´ ement sp´ ecifique ` a la classe.
+Partie 3 : mise ` a jour de la classe Corpus
+3.1Testez votre objet corpus en y ajoutant des objets des deux classes que vous venez de cr´ eer. Le
+polymorphisme doit vous permettre de r´ ealiser cette op´ eration de mani` ere simple, sans avoir ` a modifier
+les m´ ethodes de la classeCorpus.
+∗ ´Edit´ e par Tetiana Yemelianenko
+1
+3.2Vous devez pouvoir afficher la liste des articles contenus dans votre Corpus avec lasource(Reddit
+ou Arxiv) d’o` u ils proviennent. Pour cela, il existe plusieurs solutions, mais vous impl´ ementerez celle qui
+consiste ` a ajouter un champtype` a la classe m` ereDocumentet ` a impl´ ementer la m´ ethodegetType()
+directement dans les classes filles, comme vu en cours.
+Partie 4 : Patrons de conception
+4.1Pour le moment, on consid` ere qu’on ne traite qu’un unique corpus. Profitez-en pour tester
+l’utiliser d’un patron de typeSingleton.
+4.2Cr´ eez un g´ en´ erateur de documents grˆ ace ` a un patron de conception d’usine (factory pattern).
+2
+Programmation de sp´ ecialit´ e (python)
+TD 6 : analyse du contenu textuel
+Julien Velcin
+2025-2026∗
+Dans ce TD, nous allons aller plus loin dans l’analyse du contenu textuel de nos documents.
+Partie 1 : travail sur les expressions r´ eguli` eres
+1.1Nous allons commencer par utiliser la librairere(regular expression). Ajoutez une fonction
+search` a la classeCorpus, qui retourne les passages des documents contenant le mot-clef entr´ e en
+param` etre. Pour cela, il vous faudra travailler sur une unique chaˆ ıne de caract` eres qui concat` ene
+l’int´ egralit´ e des chaˆ ınes (cf. TD 3). L’id´ eal serait de ne pas avoir ` a construire cette chaˆ ıne ` a chaque
+appel de la fonctionsearch, mais une seule fois au moment du premier appel.
+1.2Ajoutez une fonctionconcorde` a la classeCorpus, qui construit un concordancier pour une
+expression donn´ ee. Il s’agit d’une l´ eg` ere modification de la fonctionsearch. La taille du contexte
+est fix´ ee par un param` etre en entr´ ee. Vous ferez appel ` a la librairiereet ` a la librairiepandaafin de
+stocker et retourner les r´ esultats obtenus dans un tableau qui doit ressembler ` a ce qui suit :
+contexte gauche motif trouv´ e contexte droit
+...oil` a un exemple de texte trouv´ e au milieu d...
+...euxi` eme exemple de texte trouv´ e ailleurs ma...
+Partie 2 : quelques statistiques
+Nous allons maintenant impl´ ementer une m´ ethode affichant plusieurs statistiques textuelles sur le
+corpus (appel´ eestats). Elle doit afficher:
+•Le nombre de mots diff´ erents dans le corpus
+•Afficher les n mots les plus fr´ equents (n est un param` etre)
+Pour cela, vous devrez suivre les instructions suivantes :
+2.1Tout d’abord, vous devez impl´ ementer une fonctionnettoyer_textequi prend une chaˆ ıne de
+caract` eres en entr´ ee et lui applique une chaˆ ıne de traitements. Il faut ` a minima impl´ ementer les
+traitements suivants : mise en minuscules (via la fonctionlower()), remplacement des passages ` a la
+ligne\n. Vous pouvez aussi remplacer les ponctuations et les chiffres ` a l’aide d’expressions r´ eguli` eres
+appropri´ ees.
+∗ ´Edit´ e par Tetiana Yemelianenko
+1
+2.2En bouclant sur les documents de votre corpus, vous devez construire vous mˆ eme levocabulaire
+qui sera utilis´ e pour d´ ecrire les textes de vos documents. Pour cela, vous utiliserez la fonctionsplit
+en consid´ erant plusieurs types de d´ elimitation possible pour l’anglais (espace, tabulation, signe de
+ponctuation. . . ). Le vocabulaire doit ˆ etre stock´ e dans un dictionnaire, mais vous pouvez passer avant
+par un ensemble (set) afin d’´ eliminer facilement les doublons.
+2.3Pour finir, il faut compter le nombre d’occurrences de chacun des mots de votre vocabulaire en
+parcourant ` a nouveau la liste de vos documents. Parcourir deux fois le corpus n’est ´ evidemment pas
+le plus efficace, donc n’h´ esitez pas ` a chercher une solution qui vous ´ evite cette perte de temps. L’id´ eal
+est de construire un tableaufreqavec la librairiepandas.
+2.4Vous pouvez enrichir le tableaufreqen ajoutant une colonne indiquant le nombre de documents
+(document frequency) qui contiennent chacun des mots. Ce n’est pas la mˆ eme chose que le nombre
+d’occurrences total des mots (term frequency).
+2

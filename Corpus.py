@@ -70,7 +70,9 @@ class Corpus:
             return
         
         auteur = self.authors[nom_auteur]
-        auteur.afficher()
+        # Utiliser afficher_infos au lieu de afficher
+        auteur.afficher_infos()
+        print(f"Taille moyenne des documents : {auteur.get_taille_moyenne_documents():.2f} caractères")
 
     def to_dataframe(self):
         data = []
@@ -126,28 +128,36 @@ class Corpus:
             corpus = cls(f"Corpus_charge_{filename}")
 
             for _, row in df.iterrows():
-
-                doc_type = row["type"]
+                # Gérer les colonnes en majuscules ou minuscules
+                doc_type = row.get("type", row.get("Type", "Document"))
+                
+                # Récupérer les colonnes (essayer majuscules puis minuscules)
+                titre = row.get('Titre', row.get('titre', ''))
+                auteur = row.get('Auteur', row.get('auteur', ''))
+                date = row.get('Date', row.get('date', ''))
+                url = row.get('URL', row.get('url', ''))
+                texte = row.get('text', row.get('texte', ''))
 
                 if doc_type == "Reddit":
                     obj = RedditDocument(
-                        row['titre'], row['auteur'], row['date'],
-                        row['url'], row['texte'], nb_commentaires=0
+                        titre, auteur, date,
+                        url, texte, nb_commentaires=0
                     )
 
                 elif doc_type == "Arxiv":
                     obj = ArxivDocument(
-                        row['titre'], row['auteur'], row['date'],
-                        row['url'], row['texte'], coauthors=[]
+                        titre, auteur, date,
+                        url, texte, coauthors=[]
                     )
 
                 else:
                     obj = Document(
-                        row['titre'], row['auteur'], row['date'],
-                        row['url'], row['texte']
+                        titre, auteur, date,
+                        url, texte
                     )
 
-                corpus.add_document_obj(row["id"], obj)
+                doc_id = row.get("id", row.get("ID", len(corpus.id2doc)))
+                corpus.add_document_obj(doc_id, obj)
 
             return corpus
         
@@ -160,33 +170,48 @@ class Corpus:
         return f"<Corpus '{self.nom}', {self.ndoc} document(s), {self.naut} auteur(s)>"
     
 
-    #La fonction de recherhe qui va retourner les passages de document contenant le mot clé
-    def search(keyword):
+    #La fonction de recherche qui va retourner les passages de document contenant le mot clé
+    def search(self, keyword):
+        # Construire la chaîne complète une seule fois si pas déjà fait
+        if not hasattr(self, '_texte_complet'):
+            self._texte_complet = ' '.join([doc.texte for doc in self.id2doc.values()])
+        
         results = []
+        keyword_lower = keyword.lower()
         for doc_id, doc in self.id2doc.items():
-            if keyword.lower() in doc.texte.lower() or keyword.lower() in doc.titre.lower():
+            if keyword_lower in doc.texte.lower() or keyword_lower in doc.titre.lower():
                 results.append((doc_id, doc))
         return results
             
 
-#fonction de concordance en utilisant re et panda et avoir dans un tableau :contexte gauche, motivf trouvé, contexte droit
-    def concorde (self, keyword, taille =30): 
+#fonction de concordance en utilisant re et pandas et avoir dans un tableau :contexte gauche, motif trouvé, contexte droit
+    def concorde(self, keyword, taille=30): 
         concordance_list = []
-        pattern = re.compile(r'.{0,' + str(taille) + r'}\b' + re.escape(keyword) + r'\b.{0,' + str(taille) + r'}', re.IGNORECASE)
+        # Pattern pour capturer contexte gauche, motif, contexte droit
+        pattern = re.compile(
+            r'(.{0,' + str(taille) + r'})\b' + re.escape(keyword) + r'\b(.{0,' + str(taille) + r'})',
+            re.IGNORECASE
+        )
 
         for doc_id, doc in self.id2doc.items():
-            matches = pattern.findall(doc.texte)
-            for match in matches:
+            for match in pattern.finditer(doc.texte):
+                contexte_gauche = match.group(1).strip()
+                motif_trouve = keyword
+                contexte_droit = match.group(2).strip()
+                
                 concordance_list.append({
                     'doc_id': doc_id,
-                    'concordance': match.strip()
+                    'contexte_gauche': contexte_gauche,
+                    'motif_trouve': motif_trouve,
+                    'contexte_droit': contexte_droit,
+                    'concordance': contexte_gauche + ' [' + motif_trouve + '] ' + contexte_droit
                 })
 
         return pd.DataFrame(concordance_list)
 
 #PARTIE 2: Statistiques 
 
-#Fonction nettoyer_text qui prend une chaine de caractères en entrée et lui applique une chaine de traitement, mise en minuscule, paaasges à la ligne
+#Fonction nettoyer_text qui prend une chaine de caractères en entrée et lui applique une chaine de traitement, mise en minuscule, remplacement des passages à la ligne
 
     def nettoyer_text (self, text):
         text = text.lower()
@@ -205,13 +230,65 @@ class Corpus:
         return len(mots_uniques)
     
     #Afficher les n mots les plus fréquents 
-    def mots_plus_frequents (self, n=10):
+    def mots_plus_frequents(self, n=10):
         from collections import Counter
         compteur_mots = Counter()
         for doc_id, doc in self.id2doc.items():
-            mots = re.findall(r'\b\w+\b', doc.texte.lower())
+            texte_net = self.nettoyer_text(doc.texte)
+            mots = re.findall(r'\b\w+\b', texte_net)
             compteur_mots.update(mots)
         return compteur_mots.most_common(n)
+
+    # Méthode stats complète selon TD6 - affiche statistiques textuelles
+    def stats(self, n=10):
+        """Affiche les statistiques textuelles du corpus"""
+        from collections import Counter
+        
+        # Compteurs pour term frequency et document frequency
+        compteur_tf = Counter()  # Term frequency (nombre total d'occurrences)
+        compteur_df = Counter()  # Document frequency (nombre de documents contenant le mot)
+        
+        vocabulaire = set()
+        
+        # Parcourir tous les documents une seule fois
+        for doc_id, doc in self.id2doc.items():
+            # Nettoyer le texte
+            texte_net = self.nettoyer_text(doc.texte)
+            # Extraire les mots
+            mots = re.findall(r'\b\w+\b', texte_net)
+            # Mettre à jour le vocabulaire
+            vocabulaire.update(mots)
+            # Compter les occurrences (term frequency)
+            compteur_tf.update(mots)
+            # Compter les documents contenant chaque mot unique (document frequency)
+            mots_uniques_doc = set(mots)
+            compteur_df.update(mots_uniques_doc)
+        
+        # Créer le DataFrame avec les fréquences
+        if vocabulaire:  # Vérifier qu'on a un vocabulaire
+            freq_data = []
+            for mot in vocabulaire:
+                freq_data.append({
+                    'mot': mot,
+                    'term_frequency': compteur_tf[mot],
+                    'document_frequency': compteur_df[mot]
+                })
+            
+            df_freq = pd.DataFrame(freq_data)
+            # Trier par term frequency décroissante
+            if not df_freq.empty:
+                df_freq = df_freq.sort_values('term_frequency', ascending=False)
+        else:
+            df_freq = pd.DataFrame(columns=['mot', 'term_frequency', 'document_frequency'])
+        
+        # Afficher les statistiques
+        print(f"\n=== Statistiques du corpus '{self.nom}' ===")
+        print(f"Nombre de documents : {self.ndoc}")
+        print(f"Nombre de mots différents (vocabulaire) : {len(vocabulaire)}")
+        print(f"\nLes {n} mots les plus fréquents :")
+        print(df_freq.head(n).to_string(index=False))
+        
+        return df_freq
 
 
 
