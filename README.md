@@ -62,10 +62,10 @@ Ce script va :
 
 ## Structure du projet
 
-- `app.py` : Récupération des données depuis Reddit et Arxiv
-- `main.py` : Utilisation du corpus et affichage des statistiques
-- `Document.py` : Classes Document, RedditDocument, ArxivDocument
-- `Author.py` : Classe Author pour gérer les auteurs
-- `Corpus.py` : Classe Corpus pour gérer la collection de documents
-- `DocumentFactory.py` : Factory pattern pour créer des documents
+- `app.py` : Récupération des données depuis Reddit et Arxiv (TD 3)
+- `Document.py` : Classes Document, RedditDocument, ArxivDocument (TD 4, TD 5)
+- `Author.py` : Classe Author pour gérer les auteurs (TD 4)
+- `Corpus.py` : Classe Corpus pour gérer la collection de documents (TD 4, TD 6)
+- `MoteurRecherche.py` : Classe MoteurRecherche pour le moteur de recherche (TD 7)
+- `DocumentFactory.py` : Factory pattern pour créer des documents (TD 5)
 - `corpus.csv` : Fichier de données (généré par app.py)

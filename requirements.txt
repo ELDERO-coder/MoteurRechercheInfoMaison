@@ -2,4 +2,8 @@ praw
 pandas
 urllib3
 xmltodict
+numpy
+scipy
+
+
 

@@ -2,7 +2,7 @@ import pandas as pd
 from Document import Document, RedditDocument, ArxivDocument
 from Corpus import Corpus
 
-df = pd.read_csv("corpus.csv")
+df = pd.read_csv("corpus.csv", sep=",")
 
 # Créer un corpus 
 corpus = Corpus("Corpus")
