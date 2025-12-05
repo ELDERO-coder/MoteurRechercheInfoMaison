@@ -10,9 +10,30 @@ class Document:
         self.type = "Document"  # Type par défaut pour les documents génériques
 
     def convertir_date(self, date_str):
-        """Convertit YYYY-MM-DD -> datetime, sinon utilise date actuelle."""
+        """Convertit différents formats de date -> datetime, sinon utilise date actuelle."""
+        if not date_str:
+            return datetime.now()
+        
+        date_str = str(date_str).strip()
+        
+        # Essayer différents formats
+        formats = [
+            "%Y-%m-%d",           # 2015-04-12
+            "%B %d, %Y",          # April 12, 2015
+            "%d/%m/%Y",           # 12/04/2015
+            "%Y/%m/%d",           # 2015/04/12
+        ]
+        
+        for fmt in formats:
+            try:
+                return datetime.strptime(date_str, fmt)
+            except ValueError:
+                continue
+        
+        # Si aucun format ne fonctionne, essayer avec dateutil si disponible
         try:
-            return datetime.strptime(date_str, "%Y-%m-%d")
+            from dateutil import parser
+            return parser.parse(date_str)
         except Exception:
             print(f"Format de date invalide: {date_str}. Utilisation de la date actuelle.")
             return datetime.now()

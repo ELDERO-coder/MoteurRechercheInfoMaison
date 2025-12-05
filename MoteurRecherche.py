@@ -182,10 +182,12 @@ class MoteurRecherche:
         
         # Calcul de la similarité cosinus entre la requête et tous les documents
         # Similarité cosinus = (A · B) / (||A|| * ||B||)
+        from tqdm import tqdm
+        
         scores = []
         doc_ids = sorted(self.corpus.id2doc.keys())
         
-        for doc_idx, doc_id in enumerate(doc_ids):
+        for doc_idx, doc_id in enumerate(tqdm(doc_ids, desc="Calcul des scores")):
             # Récupération du vecteur document
             doc_vector = matrix[doc_idx, :].toarray().flatten()
             

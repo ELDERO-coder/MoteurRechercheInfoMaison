@@ -4,6 +4,9 @@ urllib3
 xmltodict
 numpy
 scipy
+tqdm
+ipywidgets
+jupyter
 
 
 
