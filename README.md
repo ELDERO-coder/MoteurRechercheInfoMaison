@@ -34,7 +34,7 @@ export USER_AGENT="votre_user_agent"
 
 ## Utilisation
 
-### Option 1 : Récupérer les données depuis les APIs (Reddit + Arxiv)
+### Opt1: Récupérer les données depuis les APIs (Reddit + Arxiv)
 
 ```bash
 python app.py
@@ -45,7 +45,7 @@ Ce script va :
 - Récupérer des articles Arxiv sur le même thème
 - Créer/mettre à jour le fichier `corpus.csv`
 
-### Option 2 : Utiliser le corpus existant
+### Option2 : Utiliser le corpus existant
 
 Si vous avez déjà un fichier `corpus.csv`, lancez simplement :
 
@@ -60,7 +60,7 @@ Ce script va :
 - Afficher les statistiques d'un auteur
 - Afficher les statistiques complètes du corpus (vocabulaire, mots les plus fréquents)
 
-### Option 3 : Utiliser le notebook Jupyter (TD 8)
+### Opt 3 : Utiliser le notebook Jupyter (TD 8)
 
 Pour le TD 8 qui nécessite une interface avec Jupyter Notebook :
 
@@ -73,7 +73,7 @@ Le notebook `TD8.ipynb` contient :
 - **Partie 2** : Utilisation du moteur de recherche avec `MoteurRecherche` (incluant la progression avec `tqdm`)
 - **Partie 3** : Interface graphique avec widgets Jupyter (recherche interactive, filtres par auteur)
 
-Le notebook utilise le fichier `discours_US.csv` fourni dans le TD 8.
+Le notebook utilise le fichier `discours_US.csv` fourni dans le TD 8
 
 ### Option 4 : Interface comparative (TD 9-10)
 
@@ -83,26 +83,35 @@ Pour comparer Reddit vs Arxiv et suivre l'évolution temporelle de mots :
 jupyter notebook TD9.ipynb
 ```
 
-Le notebook `TD9.ipynb` propose :
+Le notebook `TD9.ipynb` contient :
 - Comparaison de fréquence des mots entre deux sources (TF)
 - Visualisation temporelle (agrégation mensuelle / trimestrielle / annuelle)
 - Interface widgets pour saisir les mots, choisir deux sources et afficher tableau + graphique
 
-## Structure du projet
+### Structure du projet
 
-- `app.py` : Récupération des données depuis Reddit et Arxiv (TD 3)
-- `Document.py` : Classes Document, RedditDocument, ArxivDocument (TD 4, TD 5)
-- `Author.py` : Classe Author pour gérer les auteurs (TD 4)
-- `Corpus.py` : Classe Corpus pour gérer la collection de documents (TD 4, TD 6)
-- `MoteurRecherche.py` : Classe MoteurRecherche pour le moteur de recherche (TD 7)
-- `DocumentFactory.py` : Factory pattern pour créer des documents (TD 5)
-- `TD8.ipynb` : Notebook Jupyter pour le TD 8 avec interface graphique
-- `TD9.ipynb` : Notebook Jupyter pour comparaison de corpus et timeline
-- `corpus.csv` : Fichier de données (généré par app.py)
-- `discours_US.csv` : Fichier de données pour le TD 8 (discours politiques )
+## Python : 3.12.4
+
+### VERSIONS DU PROJET : 
+## — v1 : version qui correspond aux TDs 3 - 5 (socle de base de l’application)
+    - `app.py` : Récupération des données depuis Reddit et Arxiv (TD 3)
+    - `Document.py` : Classes Document, RedditDocument, ArxivDocument (TD 4, TD 5)
+    - `Author.py` : Classe Author pour gérer les auteurs (TD 4)
+## — v2 : version qui correspond aux TDs 3 - 7 (avec le moteur de recherche)
+    - `Corpus.py` : Classe Corpus avec méthodes de nettoyage, statistiques, recherche (TD 6, TD 7)
+    - `MoteurRecherche.py` : Classe MoteurRecherche pour gérer les requêtes (TD 7)
+## — v3 : version qui correspond aux TDs 3 - 7 + TD 8 `a 10 (avec l’interface et l’extension)
+    - `TD8.ipynb` : Notebook Jupyter pour le TD 8 avec interface graphique
+    - `TD9.ipynb` : Notebook Jupyter pour comparaison de corpus et timeline
+    - `corpus.csv` : Fichier de données (généré par app.py)
+    - `discours_US.csv` : Fichier de données pour le TD 8 (discours politiques )
+
+
+
+
 
 
 ### MEMBRES DU GROUPE
-[-] Roméo ELOHOUNKPON
-[-] Le Thi Quynh
+- Roméo ELOHOUNKPON
+- Le Thi Quynh
 
