@@ -75,6 +75,19 @@ Le notebook `TD8.ipynb` contient :
 
 Le notebook utilise le fichier `discours_US.csv` fourni dans le TD 8.
 
+### Option 4 : Interface comparative (TD 9-10)
+
+Pour comparer Reddit vs Arxiv et suivre l'évolution temporelle de mots :
+
+```bash
+jupyter notebook TD9.ipynb
+```
+
+Le notebook `TD9.ipynb` propose :
+- Comparaison de fréquence des mots entre deux sources (TF)
+- Visualisation temporelle (agrégation mensuelle / trimestrielle / annuelle)
+- Interface widgets pour saisir les mots, choisir deux sources et afficher tableau + graphique
+
 ## Structure du projet
 
 - `app.py` : Récupération des données depuis Reddit et Arxiv (TD 3)
@@ -84,5 +97,12 @@ Le notebook utilise le fichier `discours_US.csv` fourni dans le TD 8.
 - `MoteurRecherche.py` : Classe MoteurRecherche pour le moteur de recherche (TD 7)
 - `DocumentFactory.py` : Factory pattern pour créer des documents (TD 5)
 - `TD8.ipynb` : Notebook Jupyter pour le TD 8 avec interface graphique
+- `TD9.ipynb` : Notebook Jupyter pour comparaison de corpus et timeline
 - `corpus.csv` : Fichier de données (généré par app.py)
-- `discours_US.csv` : Fichier de données pour le TD 8 (discours politiques US)
+- `discours_US.csv` : Fichier de données pour le TD 8 (discours politiques )
+
+
+### MEMBRES DU GROUPE
+[-] Roméo ELOHOUNKPON
+[-] Le Thi Quynh
+

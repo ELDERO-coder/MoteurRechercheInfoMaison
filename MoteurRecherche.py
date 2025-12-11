@@ -34,13 +34,13 @@ class MoteurRecherche:
     def _build_vocabulary(self):
         """
         Construction du vocabulaire :
-        - découper les textes en mots
+        - On fait un découpage par  les textes en mots
         - retrait des doublons
         - tri alphabétique
-        - stockage de l'id unique, du total d'occurrences, et plus tard df
+        - stockage de l'id unique, du total d'occurrences
         """
         all_words = []
-        word_to_count = {}  # mot -> nb total d'occurrences
+        word_to_count = {}  #  nb de mot total d'occurrences
         
         for doc_id, doc in self.corpus.id2doc.items():
             texte_net = self.nettoyer_text(doc.texte)
@@ -73,7 +73,7 @@ class MoteurRecherche:
         cols = []
         data = []
         
-        # Mapping doc_id -> indice de ligne
+        # Mapping doc_id par indice de ligne
         doc_ids = sorted(self.corpus.id2doc.keys())
         doc_id_to_index = {doc_id: idx for idx, doc_id in enumerate(doc_ids)}
         
@@ -92,13 +92,13 @@ class MoteurRecherche:
                 word_id = self.vocab[mot]['id']
                 rows.append(doc_idx)
                 cols.append(word_id)
-                data.append(count)  # TF brut = nb d'occurrences dans le doc
+                data.append(count)  # le nombre d'occurrences dans le doc
         
         # Matrice creuse CSR
         self.mat_TF = csr_matrix((data, (rows, cols)), shape=(nb_docs, nb_mots))
 
         # Calcul de la document frequency (df) pour chaque mot
-        doc_freq = {}  # mot -> nb de docs contenant ce mot
+        doc_freq = {}  # mot - nbre de docs contenant ce mot
         
         for doc_id, doc in self.corpus.id2doc.items():
             texte_net = self.nettoyer_text(doc.texte)
@@ -162,7 +162,7 @@ class MoteurRecherche:
             - un DataFrame pandas contenant les résultats de recherche
               (doc_id, titre, auteur, score)
         """
-        # Transformer la requête en vecteur
+        # Transformation de  la requête en vecteur
         query_vector = self._query_to_vector(mots_clefs)
         
         # Normalisation du vecteur requête
@@ -182,7 +182,7 @@ class MoteurRecherche:
         doc_ids = sorted(self.corpus.id2doc.keys())
         
         for doc_idx, doc_id in enumerate(tqdm(doc_ids, desc="Calcul des scores")):
-            # Vecteur document (on densifie UNE ligne à la fois → OK)
+            # Vecteur document 
             doc_vector = matrix[doc_idx, :].toarray().flatten()
             
             doc_norm = np.linalg.norm(doc_vector)

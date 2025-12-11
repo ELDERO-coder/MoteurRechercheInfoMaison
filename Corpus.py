@@ -24,7 +24,7 @@ class Corpus:
         self.id2doc[doc_id] = document
         self.ndoc += 1
 
-        # Gérer auteur
+        # On gère les auteur
         if auteur not in self.authors:
             self.authors[auteur] = Author(auteur)
             self.naut += 1
@@ -70,7 +70,8 @@ class Corpus:
             return
         
         auteur = self.authors[nom_auteur]
-        # Utiliser afficher_infos au lieu de afficher
+        # Utiliseation de la méthode afficher_infos de la classe Author
+        print(f"\n--- Statistiques pour l'auteur : {nom_auteur} ---")
         auteur.afficher_infos()
         print(f"Taille moyenne des documents : {auteur.get_taille_moyenne_documents():.2f} caractères")
 
@@ -128,10 +129,9 @@ class Corpus:
             corpus = cls(f"Corpus_charge_{filename}")
 
             for _, row in df.iterrows():
-                # Gérer les colonnes en majuscules ou minuscules
                 doc_type = row.get("type", row.get("Type", "Document"))
                 
-                # Récupérer les colonnes (essayer majuscules puis minuscules)
+                # On récupère  les colonnes (essayer majuscules puis minuscules)
                 titre = row.get('Titre', row.get('titre', ''))
                 auteur = row.get('Auteur', row.get('auteur', ''))
                 date = row.get('Date', row.get('date', ''))
@@ -172,7 +172,7 @@ class Corpus:
 
     #La fonction de recherche qui va retourner les passages de document contenant le mot clé
     def search(self, keyword):
-        # Construire la chaîne complète une seule fois si pas déjà fait
+        # Construila chaîne complète une seule fois si pas déjà fait
         if not hasattr(self, '_texte_complet'):
             self._texte_complet = ' '.join([doc.texte for doc in self.id2doc.values()])
         
@@ -239,33 +239,29 @@ class Corpus:
             compteur_mots.update(mots)
         return compteur_mots.most_common(n)
 
-    # Méthode stats complète selon TD6 - affiche statistiques textuelles
+    # Méthode stats pour affiche statistiques textuelles
     def stats(self, n=10):
         """Affiche les statistiques textuelles du corpus"""
         from collections import Counter
         
         # Compteurs pour term frequency et document frequency
-        compteur_tf = Counter()  # Term frequency (nombre total d'occurrences)
-        compteur_df = Counter()  # Document frequency (nombre de documents contenant le mot)
+        compteur_tf = Counter()  # Term frequency sui est le nombre total d'occurrences)
+        compteur_df = Counter()  # Document frequency qui est le nombre de documents contenant le mot
         
         vocabulaire = set()
         
-        # Parcourir tous les documents une seule fois
+        # on va d'abord parcourir tous les documents une  fois
         for doc_id, doc in self.id2doc.items():
-            # Nettoyer le texte
             texte_net = self.nettoyer_text(doc.texte)
-            # Extraire les mots
             mots = re.findall(r'\b\w+\b', texte_net)
-            # Mettre à jour le vocabulaire
             vocabulaire.update(mots)
-            # Compter les occurrences (term frequency)
             compteur_tf.update(mots)
-            # Compter les documents contenant chaque mot unique (document frequency)
+            # Compte les documents contenant chaque mot unique (document frequency)
             mots_uniques_doc = set(mots)
             compteur_df.update(mots_uniques_doc)
         
-        # Créer le DataFrame avec les fréquences
-        if vocabulaire:  # Vérifier qu'on a un vocabulaire
+        # Créeation du DataFrame avec les fréquences
+        if vocabulaire:  #  vocabulaire
             freq_data = []
             for mot in vocabulaire:
                 freq_data.append({
@@ -275,13 +271,13 @@ class Corpus:
                 })
             
             df_freq = pd.DataFrame(freq_data)
-            # Trier par term frequency décroissante
+            # Trie des TF par term frequency décroissante
             if not df_freq.empty:
                 df_freq = df_freq.sort_values('term_frequency', ascending=False)
         else:
             df_freq = pd.DataFrame(columns=['mot', 'term_frequency', 'document_frequency'])
         
-        # Afficher les statistiques
+        # Affichage des statistiques
         print(f"\n=== Statistiques du corpus '{self.nom}' ===")
         print(f"Nombre de documents : {self.ndoc}")
         print(f"Nombre de mots différents (vocabulaire) : {len(vocabulaire)}")
@@ -290,7 +286,7 @@ class Corpus:
         
         return df_freq
     
-#Dictionnaire vocab contenant le text de mes documents (retirer les doublons et trier par ordre alphabétique)
+#Dictionnaire vocab contenant le text de mes documents
     def vocab(self):
         vocab = set()
         for doc_id, doc in self.id2doc.items():

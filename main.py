@@ -4,23 +4,23 @@ from Corpus import Corpus
 
 df = pd.read_csv("corpus.csv", sep=",")
 
-# Créer un corpus 
+# Création d' un corpus 
 corpus = Corpus("Corpus")
 
 for _, row in df.iterrows():
 
     # Création du type correct selon source reddit ou arxiv
-    # Gérer les colonnes en majuscules ou minuscules selon le format du CSV
+    # Gestion des colonnes en majuscules ou minuscules selon le format du CSV
     source = str(row.get("source", row.get("Source", ""))).lower()
     
-    # Récupérer les colonnes (essayer majuscules puis minuscules)
+    # On récupère les colonnes 
     titre = row.get('Titre', row.get('titre', 'Sans titre'))
     auteur = row.get('Auteur', row.get('auteur', 'Auteur inconnu'))
     date = row.get('Date', row.get('date', ''))
     url = row.get('URL', row.get('url', ''))
     texte = row.get('text', row.get('texte', row.get('text', '')))
     
-    # Gérer les cas où les données sont des tuples (ancien format bugué)
+    # Gestion  de cas où les données sont des tuples 
     if isinstance(titre, tuple):
         titre = str(titre[0]) if titre and len(titre) > 0 else 'Sans titre'
     if isinstance(auteur, tuple):
@@ -32,9 +32,9 @@ for _, row in df.iterrows():
     if isinstance(texte, tuple):
         texte = str(texte[0]) if texte and len(texte) > 0 else ''
     
-    # Filtrer les documents vides ou corrompus (texte trop court)
+    # Filtre les documents vides ou corrompus
     if not texte or len(str(texte)) < 10:
-        continue  # Passer ce document si le texte est vide ou trop court
+        continue  
     
     if source == "reddit":
         doc = RedditDocument(
@@ -70,7 +70,7 @@ for _, row in df.iterrows():
     corpus.add_document_obj(doc_id, doc)
 
 
-# Tests 
+# Testons pour voir si tout fonctionne 
 print("\n Corpus chargé depuis corpus.csv ===")
 print(corpus)
 

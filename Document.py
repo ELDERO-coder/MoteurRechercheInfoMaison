@@ -16,12 +16,12 @@ class Document:
         
         date_str = str(date_str).strip()
         
-        # Essayer différents formats
+        # On essaie  différents formats  de date
         formats = [
-            "%Y-%m-%d",           # 2015-04-12
-            "%B %d, %Y",          # April 12, 2015
-            "%d/%m/%Y",           # 12/04/2015
-            "%Y/%m/%d",           # 2015/04/12
+            "%Y-%m-%d",           # 2025-11-01
+            "%B %d, %Y",          # Novembre 01, 2025
+            "%d/%m/%Y",           # 01/11/2025
+            "%Y/%m/%d",           # 2025/11/01
         ]
         
         for fmt in formats:
@@ -30,7 +30,7 @@ class Document:
             except ValueError:
                 continue
         
-        # Si aucun format ne fonctionne, essayer avec dateutil si disponible
+        # Si aucun format ne fonctionne, ca essai avec dateutil si disponible
         try:
             from dateutil import parser
             return parser.parse(date_str)
