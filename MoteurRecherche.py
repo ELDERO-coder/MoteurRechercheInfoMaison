@@ -6,20 +6,25 @@ from Corpus import Corpus
 
 class MoteurRecherche:
     def __init__(self, corpus: Corpus):
-
-        """Initialisation du moteur de recherche avec un corpus généré dans corpus.csv et construiction  automatique de la matrice Documents x Termes."""
+        """
+        Initialisation du moteur de recherche avec un corpus généré dans corpus.csv
+        et construction automatique de la matrice Documents x Termes.
+        """
         self.corpus = corpus
-        self.vocab = {}  # Dictionnaire du vocabulaire 
-        self.mat_TF = None  # Matrice Term Frequency à none
-        self.mat_TFxIDF = None  # Matrice TFxIDF à none
-        
+        self.vocab = {}          # Dictionnaire du vocabulaire 
+        self.mat_TF = None       # Matrice Term Frequency
+        self.mat_TFxIDF = None   # Matrice TFxIDF
+        self.idf = None          # Vecteur IDF (optionnel)
+
         # Construction du vocabulaire et des matrices
         self._build_vocabulary()
         self._build_TF_matrix()
         self._build_TFxIDF_matrix()
     
     def nettoyer_text(self, text):
-        """Nettoyage du texte de Corpus"""
+        """Nettoyage du texte du corpus"""
+        if not isinstance(text, str):
+            text = str(text)
         text = text.lower()
         text = re.sub(r'\n', ' ', text)
         text = re.sub(r'[^\w\s]', '', text)
@@ -28,75 +33,72 @@ class MoteurRecherche:
     
     def _build_vocabulary(self):
         """
-        Construction du vocabulaire
-        - Découper les chaînes en mots
-        - Retrait des doublons
-        - Tri par ordre alphabétique
-        - Stockage de l'id unique et du nombre total d'occurrences
+        Construction du vocabulaire :
+        - découper les textes en mots
+        - retrait des doublons
+        - tri alphabétique
+        - stockage de l'id unique, du total d'occurrences, et plus tard df
         """
-        # Collecte de tous les mots de tous les documents
         all_words = []
-        word_to_count = {}  # Compteur des occurrences totales
+        word_to_count = {}  # mot -> nb total d'occurrences
         
         for doc_id, doc in self.corpus.id2doc.items():
             texte_net = self.nettoyer_text(doc.texte)
             mots = re.findall(r'\b\w+\b', texte_net)
             all_words.extend(mots)
             
-            # Compte des occurrences de chaque mot
             for mot in mots:
                 word_to_count[mot] = word_to_count.get(mot, 0) + 1
         
-        # Création du vocabulaire trié alphabétiquement
+        # Mots uniques triés
         mots_uniques = sorted(set(all_words))
         
-        # Construction du dictionnaire vocab avec id unique et nombre d'occurrences
+        # Dictionnaire vocab : mot -> infos
         for idx, mot in enumerate(mots_uniques):
             self.vocab[mot] = {
                 'id': idx,
                 'total_occurrences': word_to_count[mot],
-                'document_frequency': 0  
+                'document_frequency': 0
             }
     
     def _build_TF_matrix(self):
-        """ Construction de la matrice TF (Term Frequency) Dimension: Nombre de documents x Nombre de mots"""
+        """
+        Construction de la matrice TF (Term Frequency)
+        Dimensions : nb_docs x nb_mots
+        """
         nb_docs = len(self.corpus.id2doc)
         nb_mots = len(self.vocab)
         
-        # Liste pour construire la matrice creuse
         rows = []
         cols = []
         data = []
         
-        # Création d'un mapping doc_id --- index dans la matrice
+        # Mapping doc_id -> indice de ligne
         doc_ids = sorted(self.corpus.id2doc.keys())
         doc_id_to_index = {doc_id: idx for idx, doc_id in enumerate(doc_ids)}
         
-        # Parcourir tous les documents
+        # Parcours des documents
         for doc_id, doc in self.corpus.id2doc.items():
             doc_idx = doc_id_to_index[doc_id]
             texte_net = self.nettoyer_text(doc.texte)
             mots = re.findall(r'\b\w+\b', texte_net)
             
-            # Compte des occurrences de chaque mot dans ce document
             word_counts = {}
             for mot in mots:
                 if mot in self.vocab:
                     word_counts[mot] = word_counts.get(mot, 0) + 1
             
-            # Ajout des valeurs dans la matrice
             for mot, count in word_counts.items():
                 word_id = self.vocab[mot]['id']
                 rows.append(doc_idx)
                 cols.append(word_id)
-                data.append(count)  # TF = nombre d'occurrences du mot dans le document
+                data.append(count)  # TF brut = nb d'occurrences dans le doc
         
-        # Création de la matrice creuse CSR
+        # Matrice creuse CSR
         self.mat_TF = csr_matrix((data, (rows, cols)), shape=(nb_docs, nb_mots))
-        
-        # Calcul de la document frequency pour chaque mot
-        # Compte combien de documents contiennent chaque mot
-        doc_freq = {}  # mot -> nombre de documents contenant ce mot
+
+        # Calcul de la document frequency (df) pour chaque mot
+        doc_freq = {}  # mot -> nb de docs contenant ce mot
         
         for doc_id, doc in self.corpus.id2doc.items():
             texte_net = self.nettoyer_text(doc.texte)
@@ -105,49 +107,42 @@ class MoteurRecherche:
                 if mot in self.vocab:
                     doc_freq[mot] = doc_freq.get(mot, 0) + 1
         
-        # Mise à jour du vocabulaire avec la document frequency
         for mot in self.vocab:
             self.vocab[mot]['document_frequency'] = doc_freq.get(mot, 0)
     
     def _build_TFxIDF_matrix(self):
-        """
-        Construction de la matrice TFxIDF
-        TFxIDF = TF * IDF où IDF = log(N / df)
-        N = nombre total de documents
-        df = document frequency (nombre de documents contenant le mot)
-        """
+    
         nb_docs = len(self.corpus.id2doc)
-        
-        # Création de la matrice IDF
-        idf_values = np.zeros(len(self.vocab))
+        nb_terms = len(self.vocab)
+
+    # Vecteur IDF
+        idf_values = np.zeros(nb_terms, dtype=np.float32)
         for mot, info in self.vocab.items():
             word_id = info['id']
             df = info['document_frequency']
             if df > 0:
                 idf_values[word_id] = np.log(nb_docs / df)
             else:
-                idf_values[word_id] = 0
-        
-        # Multiplication de TF par IDF (élément par élément)
-        # Convertir TF en array dense pour la multiplication
-        tf_dense = self.mat_TF.toarray()
-        idf_matrix = np.tile(idf_values, (nb_docs, 1))
-        
-        self.mat_TFxIDF = csr_matrix(tf_dense * idf_matrix)
+                idf_values[word_id] = 0.0
+    
+        self.idf = idf_values
+
+    # TF en float32
+        self.mat_TF = self.mat_TF.astype(np.float32)
+
+    
+        self.mat_TFxIDF = self.mat_TF.multiply(idf_values).tocsr()
+
     
     def _query_to_vector(self, mots_clefs):
         """
-        Transformation des mots-clés de la requête en vecteur sur le vocabulaire
-        Retourne un vecteur sparse avec les fréquences des mots de la requête
+        Transformation des mots-clés de la requête en vecteur dense de taille |vocab|.
         """
-        # Nettoyage et extraction des mots de la requête
         query_clean = self.nettoyer_text(mots_clefs)
         query_words = re.findall(r'\b\w+\b', query_clean)
-    
-    # Création d'un vecteur de taille du vocabulaire
-        vector = np.zeros(len(self.vocab))
+
+        vector = np.zeros(len(self.vocab), dtype=np.float32)
         
-        # Compte des occurrences de chaque mot de la requête
         for mot in query_words:
             if mot in self.vocab:
                 word_id = self.vocab[mot]['id']
@@ -160,16 +155,17 @@ class MoteurRecherche:
         Fonction de recherche
         
         Arguments:
-            mots_clefs: string contenant les mots-clés de la requête
-            nb_docs: nombre de documents à retourner
+            - mots_clefs: string contenant les mots-clés de la requête
+            - nb_docs: nombre de documents à retourner
         
-        Retourne ainsi:
-            un DataFrame pandas contenant les résultats de recherche
+        Retourne:
+            - un DataFrame pandas contenant les résultats de recherche
+              (doc_id, titre, auteur, score)
         """
         # Transformer la requête en vecteur
         query_vector = self._query_to_vector(mots_clefs)
         
-        # Normalisation du vecteur requête (pour le cosinus)
+        # Normalisation du vecteur requête
         query_norm = np.linalg.norm(query_vector)
         if query_norm == 0:
             # Aucun mot de la requête n'est dans le vocabulaire
@@ -177,28 +173,21 @@ class MoteurRecherche:
         
         query_vector_normalized = query_vector / query_norm
         
-        # Utilisation de la matrice TFxIDF
+        # Matrice TFxIDF
         matrix = self.mat_TFxIDF
         
-        # Calcul de la similarité cosinus entre la requête et tous les documents
-        # Similarité cosinus = (A · B) / (||A|| * ||B||)
         from tqdm import tqdm
         
         scores = []
         doc_ids = sorted(self.corpus.id2doc.keys())
         
         for doc_idx, doc_id in enumerate(tqdm(doc_ids, desc="Calcul des scores")):
-            # Récupération du vecteur document
+            # Vecteur document (on densifie UNE ligne à la fois → OK)
             doc_vector = matrix[doc_idx, :].toarray().flatten()
             
-            # Calcul de la norme du vecteur document
             doc_norm = np.linalg.norm(doc_vector)
-            
             if doc_norm > 0:
-                # Normalisation du vecteur document
                 doc_vector_normalized = doc_vector / doc_norm
-                
-                # Produit scalaire (similarité cosinus car les vecteurs sont normalisés pour le cosinus)
                 score = np.dot(query_vector_normalized, doc_vector_normalized)
             else:
                 score = 0.0
@@ -211,10 +200,10 @@ class MoteurRecherche:
         # Tri par score décroissant
         scores.sort(key=lambda x: x['score'], reverse=True)
         
-        # Garde seulement les nb_docs meilleurs
+        # On ne garde que les nb_docs meilleurs
         top_scores = scores[:nb_docs]
         
-        # Construction du DataFrame avec les informations des documents
+        # Construction du DataFrame résultats
         results = []
         for result in top_scores:
             doc_id = result['doc_id']
@@ -228,6 +217,4 @@ class MoteurRecherche:
             })
         
         df_results = pd.DataFrame(results)
-        
         return df_results
-
